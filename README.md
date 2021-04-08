@@ -20,5 +20,5 @@ El sitio se encuentra publicado en el siguiente [link](https://say-my-name-pedia
     - [Logo](https://juicebubble.co.za/product-category/hoodies/page/5/)
     - [favicon.ico](https://www.favicon.cc/?action=icon&file_id=800084)
 
-## Consideración
+# Consideración
 Este repositorio no fue donde se creó la tarea, sino que fue solo utilizada para hacer el _deploy_ en Heroku. El original está en el siguiente [link](https://github.com/nlecaros1/IIC3103-T1). Si necesitas acceso, puedes pedirlo.
