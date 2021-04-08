@@ -219,9 +219,9 @@ const styles = {
   buttons: { alignSelf: 'center' },
   seasonsContainer: { margin: 10, marginTop: 20 },
   image: {
+    borderRadius: isMobile ? 10 : 0, 
     borderTopRightRadius: 10,
     borderBottomRightRadius: 10, 
-    borderRadius: isMobile ? 10 : 0, 
     alignSelf: isMobile ? 'center' : 'flex-end',
     marginBottom: isMobile ? 20 : 0,
   },
