@@ -1,7 +1,5 @@
-// La función useMediaQuery fue obtenida de https://stackoverflow.com/questions/19014250/rerender-view-on-browser-resize-with-react
-
-import React, { useState, useEffect, useLayoutEffect } from 'react';
-import { Container, Loader, Button, Panel, ButtonToolbar, ButtonGroup, Alert, } from 'rsuite';
+import React, { useState, useEffect } from 'react';
+import { Container, Loader, Button, ButtonToolbar, ButtonGroup, Alert, } from 'rsuite';
 import axios from 'axios'
 import { useHistory } from 'react-router';
 import moment from 'moment';
@@ -10,27 +8,9 @@ import colors from '../styles/colors';
 const Show = ({
   commonApiUrl, season, showName, isMobile,
 }) => {
-  const useMediaQuery = () => {
-    const [screenSize, setScreenSize] = useState([0, 0]);
-    useLayoutEffect(() => {
-      function updateScreenSize() {
-        setScreenSize([window.innerWidth, window.innerHeight]);
-      }
-      window.addEventListener('resize', updateScreenSize);
-      updateScreenSize();
-      return () => window.removeEventListener('resize', updateScreenSize);
-    }, []);
-    return screenSize;
-  };
-
-  const [width, height] = useMediaQuery();
   const history = useHistory()
-  let expandedSeason = season;
-  if (expandedSeason) {
-    expandedSeason = parseInt(expandedSeason) - 1;
-  }
+  const expandedSeason = season;
   const formattedName = showName.replace(/ /g, '+');;
-  const name = showName
   const url = `${commonApiUrl}/episodes?series=${formattedName}`
   const [isLoading, setIsLoading] = useState(true);
   const [seasons, setSeasons] = useState({});
@@ -46,7 +26,8 @@ const Show = ({
         temporalSeasons[episodeSeason] = {
           label: `Temporada ${episodeSeason}`,
           value: episodeSeason,
-          children: [formatEpisodeToTree(episode)]
+          children: [formatEpisodeToTree(episode)],
+          position: -1,
       }
     }});
     return temporalSeasons;
@@ -61,7 +42,8 @@ const Show = ({
   const formatSeasonsToTree = (seasons) => {
     const seasonAsArray = [];
     Object.keys(seasons).forEach((seasonNumber) => {
-      seasonAsArray.push(seasons[seasonNumber])
+      const position = seasonAsArray.push(seasons[seasonNumber])
+      seasons[seasonNumber].position = position - 1;
     })
     return(seasonAsArray)
   }
@@ -72,10 +54,19 @@ const Show = ({
           const temporalSeasonsAsObject = formatDataToSeasons(response.data)
           const temporalSeasonsAsArray = formatSeasonsToTree(temporalSeasonsAsObject)
           setSeasons(temporalSeasonsAsArray);
-          if (selectedSeason + 1 > temporalSeasonsAsArray.length) {
-            const temporalExandedSeason = selectedSeason + 1;
-            setSelectedSeason('');
-            Alert.error(`Lo sentimos, no existe la temporada ${temporalExandedSeason}`);
+          if (expandedSeason) {
+            let actualSeasonToBeExpanded = -1;
+            temporalSeasonsAsArray.forEach((element) => {
+              if (element.value.toString() === expandedSeason.toString()) {
+                actualSeasonToBeExpanded = element.position
+              }
+            });
+            if (actualSeasonToBeExpanded === -1) {
+              setSelectedSeason('');
+              Alert.error(`Lo sentimos, no existe la temporada ${expandedSeason}`);
+            } else {
+              setSelectedSeason(actualSeasonToBeExpanded)
+            }
           }
           setIsLoading(false)
       })
@@ -85,39 +76,13 @@ const Show = ({
     }, 
   []);
 
-  const Card = ({
-    index, imageSource,height, width
-  }) => (
-    <Button
-      appearance="subtle"
-      key={index}
-      style={styles.card}
-    >
-      <Panel
-        key={index}
-        bodyFill
-        style={{...styles.panel, height}}
-      >
-        <img
-          src={imageSource}
-          height={height}
-          style={styles.image}
-          alt=""
-          width={width}
-        />
-        <p style={styles.text}>
-          {name}
-        </p>
-      </Panel>
-    </Button>
-  );
-
   const Season = ({ season }) => {
     return(
       <Button
         appearance="subtle"
-        active={season.value - 1 === selectedSeason}
-        onClick={() => setSelectedSeason(season.value - 1)}
+        active={season.position === selectedSeason}
+        onClick={() => {
+          setSelectedSeason(season.position)}}
         >
           {season.label}
         </Button>
@@ -169,7 +134,7 @@ const Show = ({
     <Container>
       {isLoading ? 
       <Container> 
-        <Loader center content="Cargando"/> 
+        <Loader center content="Cargando" backdrop/> 
       </Container>
     : (
       <Container>
